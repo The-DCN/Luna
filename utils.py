@@ -39,7 +39,6 @@ def validate_user_credentials(username, password):
     
         if user_doc.exists:
             user = User.from_dict(user_doc.to_dict())
-            d = user.to_dict()
             return user.password == password
 
         return False 
@@ -104,7 +103,3 @@ def deactivate_token(token):
     
     except:
         print('something went wrong while trying to add the jwt to the expired tokens')
-
-
-    
-deactivate_token("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiJqZG9lMTIzIiwiaWF0IjoxNjQ1Mzk5MDY0LCJleHAiOiIyMDIyLTAyLTIxIDAwOjE3OjQ0LjM5MDM3NiIsInJvbGUiOiJVU0VSIn0.NoTL8gIjOfTIw3DxKwyKy6gt8J9e9MFCeDVE5wPCsRk")

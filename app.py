@@ -1,5 +1,6 @@
 import os
 from flask import Flask, jsonify, request, escape
+from flask_cors import CORS
 import werkzeug.exceptions as ex
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt
@@ -13,6 +14,7 @@ from models import User
 
 app = Flask(__name__)
 app.config.from_object('config')
+CORS(app)
 
 '''
     Things to be implemented here
