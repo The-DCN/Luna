@@ -9,6 +9,7 @@ import functools
 import utils
 import datetime
 import config
+import sleep
 from models import User
 
 app = Flask(__name__)
@@ -103,6 +104,18 @@ def user_login():
 def invalid_credentials():
     return jsonify({'message': 'username or password is incorrect or does not exist'})
 
+# Pending token authentication - WIP
+@app.route("/sleep", methods=["GET"])
+#@login_required
+def getUserFeed(user):
+    
+    list = sleep.getLastSeven('jdoe123')
+    
+    #list = sleep.getLastSeven(user["username"])
+
+    return jsonify({"message": list})
+
+
 #when this is ran the access token is added to db of invalidated jwts 
 @app.route("/logout", methods=["POST"])
 def user_logout():
@@ -113,7 +126,6 @@ def user_logout():
         return jsonify({'message': ''})
     except:
         return  jsonify({'message': 'error occured'})
-
 
 @app.route("/test", methods=["GET"])
 def test_request():
