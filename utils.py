@@ -1,8 +1,7 @@
 from db import db
-import bcrypt
+from lib.pybcrypt import bcrypt
 from models import User
 from authlib.jose import jwt
-import functools
 from datetime import datetime, timedelta
 from google.cloud import firestore
 
@@ -12,26 +11,36 @@ METHODS TO BE IMPLEMENTED
 create_user():
 
 1. Creating a new user in the database
-- encrypt the password using bcrypt
-- create user object using the provided fields from the request and encrypted the password
--  
+   - encrypt the password using bcrypt
+   - create user object using the provided fields from the request and encrypted the password
 
-update_user():
-2. updating a user in the database
+2. Getting a user from the database
 
+3. updating a user in the database
 
-3. deleting a user from the database
-
-4. getting an individual user from the database
-    
+4. deleting a user from the database
 '''
 
 '''
 checks if username exists and valid password
 '''
-        
-        
+def create_user(self,first_name,last_name, username, email, password):
+  
+    salt_password = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password, salt_password)
 
+    # create dictionary holding data 
+    user_data = {
+        "first_name" : first_name,
+        "last_name" : last_name,
+        "username" : username,
+        "email" : email,
+        "password" : hashed_password
+    }
+    
+    # creating document 
+    db.collection("users").add(user_data)
+    
 def validate_user_credentials(username, password):
     try:
         user_doc_ref = db.collection(u'users').document(username)
