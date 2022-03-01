@@ -135,14 +135,14 @@ def hashpw(key, salt):
     # This can be precomputed later 
     j = 0;
     cdata = [None] * BCRYPT_BLOCKS
-    for i in xrange(BCRYPT_BLOCKS):
+    for i in range(BCRYPT_BLOCKS):
         cdata[i], j = blowfish.stream2word(ciphertext, j)
 
     # Now do the encryption 
-    for _ in xrange(64):
+    for _ in range(64):
         blowfish.pybc_blf_enc(state, cdata, BCRYPT_BLOCKS / 2)
 
-    for i in xrange(BCRYPT_BLOCKS):
+    for i in range(BCRYPT_BLOCKS):
         ciphertext[4 * i + 3] = cdata[i] & 0xff
         cdata[i] = cdata[i] >> 8
         ciphertext[4 * i + 2] = cdata[i] & 0xff

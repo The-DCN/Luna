@@ -73,10 +73,10 @@ def encipher(ctx, xl, xr):
     return ((Xr ^ p[17]) & 0xFFFFFFFF, Xl & 0xFFFFFFFF)
 
 def stream2word(data, current):
-    temp = 0x00000000L;
+    temp = 0x00000000;
     j = current
 
-    for _ in xrange(4):
+    for _ in range(4):
         if j >= len(data):
             j = 0
             
@@ -88,7 +88,7 @@ def stream2word(data, current):
 def expand0state(ctx, key):
     j = 0;
     p = ctx.P
-    for i in xrange(BLF_N + 2):
+    for i in range(BLF_N + 2):
         # Extract 4 int8 to 1 int32 from keystream 
         temp, j = stream2word(key, j)
         p[i] ^=  temp
@@ -96,13 +96,13 @@ def expand0state(ctx, key):
     j = 0
     datal = 0x0L
     datar = 0x0L
-    for i in xrange(0, BLF_N + 2, 2):
+    for i in range(0, BLF_N + 2, 2):
         datal, datar = encipher(ctx, datal, datar);
         p[i + 0] = datal
         p[i + 1] = datar
         
     s = ctx.S
-    for i in xrange(0, 4*256, 2):
+    for i in range(0, 4*256, 2):
         datal, datar = encipher(ctx, datal, datar);
 
         s[i + 0] = datal
@@ -111,7 +111,7 @@ def expand0state(ctx, key):
 def expandstate(ctx, data, key):
     j = 0
     p = ctx.P
-    for i in xrange(BLF_N + 2):
+    for i in range(BLF_N + 2):
         # Extract 4 int8 to 1 int32 from keystream 
         temp, j = stream2word(key, j);
         p[i] ^=  temp
@@ -119,7 +119,8 @@ def expandstate(ctx, data, key):
     j = 0
     datal = 0x00000000
     datar = 0x00000000
-    for i in xrange(0, BLF_N + 2L, 2):
+    
+    for i in range(0, BLF_N + 2, 2):
         d, j = stream2word(data, j);
         datal ^=  d
         
@@ -132,7 +133,7 @@ def expandstate(ctx, data, key):
         p[i + 1] = datar
 
     s = ctx.S
-    for i in xrange(0, 4*256, 2):
+    for i in range(0, 4*256, 2):
         d,j = stream2word(data, j);
         datal ^= d
         d,j = stream2word(data, j);
@@ -413,11 +414,11 @@ def initstate():
             0xb74e6132L, 0xce77e25bL, 0x578fdfe3L, 0x3ac372e6L])
         
         P = array.array('L', [
-                              0x243f6a88L, 0x85a308d3L, 0x13198a2eL, 0x03707344L,
-                              0xa4093822L, 0x299f31d0L, 0x082efa98L, 0xec4e6c89L,
-                              0x452821e6L, 0x38d01377L, 0xbe5466cfL, 0x34e90c6cL,
-                              0xc0ac29b7L, 0xc97c50ddL, 0x3f84d5b5L, 0xb5470917L,
-                              0x9216d5d9L, 0x8979fb1bL])
+            0x243f6a88L, 0x85a308d3L, 0x13198a2eL, 0x03707344L,
+            0xa4093822L, 0x299f31d0L, 0x082efa98L, 0xec4e6c89L,
+            0x452821e6L, 0x38d01377L, 0xbe5466cfL, 0x34e90c6cL,
+            0xc0ac29b7L, 0xc97c50ddL, 0x3f84d5b5L, 0xb5470917L,
+            0x9216d5d9L, 0x8979fb1bL ])
 
     return Ctx()
 

@@ -8,8 +8,9 @@ hashed = bcrypt.hashpw(password, salt)
 # previously been hashed
 hashed2 = bcrypt.hashpw(password, hashed)
 
-print hashed2
+print(hashed2)
+
 if hashed2 == hashed:
-    print "It matches"
+    print("It matches")
 else:
-    print "It does not match"
+    print("It does not match")
