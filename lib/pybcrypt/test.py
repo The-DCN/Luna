@@ -65,14 +65,14 @@ test_vectors = [
 class TestRadix(unittest.TestCase):
     def test_00__test_vectors(self):
         for plain, salt, expected in test_vectors:
-            print plain, salt, expected
+            print(plain, salt, expected)
             self.assertEqual(bcrypt.hashpw(plain, salt), expected)
             break
         
     def ignore_test_01__gensalt(self):
         for plain, salt, expected in test_vectors:
             for i in range(2,14,2):
-                print i, plain, salt, expected
+                print(i, plain, salt, expected)
                 salt = bcrypt.gensalt(i)
                 crypted = bcrypt.hashpw(plain, salt)
                 crypted2 = bcrypt.hashpw(plain, crypted)
