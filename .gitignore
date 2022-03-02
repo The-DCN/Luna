@@ -135,3 +135,6 @@ authlib/
 #rsa keys
 id_rsa.
 id_rsa.pub
+
+#pem files
+*.pem

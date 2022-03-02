@@ -84,20 +84,24 @@ def hello_world(user):
  
                 
 @app.route("/api/login", methods=["POST"])
-def user_login():
+def user_login():    
     
     try:
         valid_credentials = utils.validate_user_credentials(request.json['username'], request.json['password'])
-        
+                
         if not valid_credentials:
-            return jsonify({'message': 'your credentials were invalid'})
+            return jsonify({'message': 'your credentials were invalid'}), 400
         
-        access_token = utils.create_access_token(request.json['username'], app.config['KEY'])
-        refresh_token = utils.create_refresh_token(request.json['username'], app.config['KEY'])
+        f = open('rsa_private.pem', 'r')
+        key = f.read()
+        
+        access_token = utils.create_access_token(request.json['username'], key)
+        refresh_token = utils.create_refresh_token(request.json['username'], key)
+        
         return jsonify({'access_token': access_token, 'refresh_token': refresh_token})
     
     except Exception as e:
-        return jsonify({'message': 'something went wrong while processing your request'})    
+        return jsonify({'message': 'something went wrong while processing your request'}), 400   
     
 
 

@@ -1,7 +1,8 @@
+from __future__ import unicode_literals
 from db import db
-from lib.pybcrypt import bcrypt
 from models import User
 from authlib.jose import jwt
+import bcrypt
 from datetime import datetime, timedelta
 from google.cloud import firestore
 
@@ -24,70 +25,100 @@ create_user():
 '''
 checks if username exists and valid password
 '''
-def create_user(self,first_name,last_name, username, email, password):
-  
-    salt_password = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(password, salt_password)
+def create_user(first_name,last_name, username, email, password):
 
-    # create dictionary holding data 
-    user_data = {
-        "first_name" : first_name,
-        "last_name" : last_name,
-        "username" : username,
-        "email" : email,
-        "password" : hashed_password
-    }
+        #check if the user already exists 
+        user_check = db.collection(u'user').document(username).get()
+        
+        if user_check.exists:
+            raise Exception
+        
+        #create new user in firestore
+        user_ref = db.collection(u'users').document(username)
+        
+        unicode_pass = bytes(password, "utf8")
+        hashed_password = bcrypt.hashpw(unicode_pass, bcrypt.gensalt())
     
-    # creating document 
-    db.collection("users").add(user_data)
+        # create dictionary holding data 
+        user_data = {
+            "first_name" : first_name,
+            "last_name" : last_name,
+            "username" : username,
+            "email" : email,
+            "password" : hashed_password
+        }
+    
+        # creating document 
+        user_ref.set(user_data)
+        
+        
     
 def validate_user_credentials(username, password):
-    try:
+    
         user_doc_ref = db.collection(u'users').document(username)
         user_doc = user_doc_ref.get()
-    
+        
         if user_doc.exists:
-            user = User.from_dict(user_doc.to_dict())
-            d = user.to_dict()
-            return user.password == password
+            
+            user = user_doc.to_dict()
+            
+            print("user is here :)")      
+            #convert password to byte array before checking the credentials
+            unicode_password = bytes(password, "utf8") 
+            return bcrypt.checkpw(unicode_password, user['password'])
 
         return False 
-    
-    except Exception as e:
-        return None
    
 
 def update_user_credentials(user):
     user_doc_ref = db.collection(u'users').document(
         user.username)
     user_doc_ref.update(user.to_dict())
-    
-    
+
+  
+
+# in 
 def create_access_token(username, key, role =[]):
+    
+    def is_empty(list):
+        return not list
     
     current_date = datetime.now()
     future_date = current_date +  timedelta(hours=1)
-    header =  {'alg': 'HS256'}
+    user_role = 'USER'
+    
+    #check if the user has a role in the
+    if not is_empty(role):
+        user_role = role[0]
+    
+    header =  {'alg': 'RS256'}
     payload = {'userid': username, 
                'iat': str(datetime.now()),
                'exp': str(future_date),
-               'role': 'USER'}
-    token  = jwt.encode(header, payload, key)
+               'role': user_role}
+    
+    token  = jwt.encode(header, payload, key).decode('utf8')
   
-    return token.decode('utf8')
+    return token
 
 def create_refresh_token(username, key):
 
-    header = {'alg': 'HS256'}
-    
+    header = {'alg': 'RS256'}
+    user_doc_ref = db.collection(u'users').document(username)
     current_date = datetime.now()
     future_date = current_date +  timedelta(hours=48)
     payload = {'iat':str(current_date), 
                'exp':str(future_date),
                }
     
-    token = jwt.encode(header, payload, key)
-    return token.decode('utf8')
+    token = jwt.encode(header, payload, key).decode('utf8')
+    
+    # add refresh token to the user document
+    user_doc_ref.set({
+        'refresh_token': token
+    }, merge=True) 
+    
+    return token
 
 
 def check_refresh_token(token):
