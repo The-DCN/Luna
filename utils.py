@@ -61,8 +61,6 @@ def validate_user_credentials(username, password):
         if user_doc.exists:
             
             user = user_doc.to_dict()
-            
-            print("user is here :)")      
             #convert password to byte array before checking the credentials
             unicode_password = bytes(password, "utf8") 
             return bcrypt.checkpw(unicode_password, user['password'])
@@ -77,16 +75,16 @@ def update_user_credentials(user):
 
   
 
-# in 
-def create_access_token(username, key, role =[]):
+
+def create_token(username, key, time, role =[]):
     
     def is_empty(list):
         return not list
     
     current_date = datetime.now()
-    future_date = current_date +  timedelta(hours=1)
+    future_date = current_date +  timedelta(minutes=time)
     user_role = 'USER'
-    
+        
     #check if the user has a role in the
     if not is_empty(role):
         user_role = role[0]
@@ -99,25 +97,6 @@ def create_access_token(username, key, role =[]):
     
     token  = jwt.encode(header, payload, key).decode('utf8')
   
-    return token
-
-def create_refresh_token(username, key):
-
-    header = {'alg': 'RS256'}
-    user_doc_ref = db.collection(u'users').document(username)
-    current_date = datetime.now()
-    future_date = current_date +  timedelta(hours=48)
-    payload = {'iat':str(current_date), 
-               'exp':str(future_date),
-               }
-    
-    token = jwt.encode(header, payload, key).decode('utf8')
-    
-    # add refresh token to the user document
-    user_doc_ref.set({
-        'refresh_token': token
-    }, merge=True) 
-    
     return token
 
 

@@ -1,5 +1,6 @@
 import os
 from flask import Flask, jsonify, request, escape
+from flask_cors import CORS
 import werkzeug.exceptions as ex
 from authlib.integrations.flask_client import OAuth
 from authlib.jose import jwt
@@ -13,6 +14,7 @@ import sleep
 from models import User
 
 app = Flask(__name__)
+CORS(app)
 app.config.from_object('config')
 
 '''
@@ -76,10 +78,9 @@ def login_required(method):
 
     
 
-@app.route("/", methods=["GET"])
+@app.route("/api", methods=["GET"])
 @login_required
 def hello_world(user):
-    sleep_record = db.collections(u'sleep').where('')
     return jsonify({"greeting": "hello world"})
  
                 
@@ -87,7 +88,8 @@ def hello_world(user):
 def user_login():    
     
     try:
-        valid_credentials = utils.validate_user_credentials(request.json['username'], request.json['password'])
+        valid_credentials = utils.validate_user_credentials(request.json['username'], 
+                                                            request.json['password'])
                 
         if not valid_credentials:
             return jsonify({'message': 'your credentials were invalid'}), 400
@@ -95,13 +97,29 @@ def user_login():
         f = open('rsa_private.pem', 'r')
         key = f.read()
         
-        access_token = utils.create_access_token(request.json['username'], key)
-        refresh_token = utils.create_refresh_token(request.json['username'], key)
+        access_token_time = app.config['ACCESS_TOKEN_EXPIRE_TIME']
+        refresh_token_time = app.config['REFRESH_TOKEN_EXPIRE_TIME']
+        
+        access_token = utils.create_token(request.json['username'], 
+                                          key, access_token_time,)
+        
+        refresh_token = utils.create_token(request.json['username'], 
+                                                   key, refresh_token_time)
+        
+        
+        user_doc_ref = db.collection(u'users').document(request.json['username'])
+        
+        # add refresh token to the user document
+        user_doc_ref.set({
+            'refresh_token': refresh_token
+         }, merge=True) 
+
         
         return jsonify({'access_token': access_token, 'refresh_token': refresh_token})
     
     except Exception as e:
-        return jsonify({'message': 'something went wrong while processing your request'}), 400   
+       return jsonify({'message': 'something went wrong' +
+                        'while processing your request'}), 400   
     
 
 
@@ -129,13 +147,12 @@ def user_logout():
         utils.deactivate_token(token)
         return jsonify({'message': ''})
     except:
-        return  jsonify({'message': 'error occured'})
+        return jsonify({'message': 'error occured'})
 
 @app.route("/test", methods=["GET"])
 def test_request():
     print(request.json['username'])
     return "Hello, world!"
-
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
