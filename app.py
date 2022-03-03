@@ -41,6 +41,7 @@ def login_required(method):
                 raise Exception
            
             else:
+                
                 #decode the token 
                 encoded_token = bytes(token, 'utf-8')
                 decoded = jwt.decode(encoded_token, app.config['KEY'])
