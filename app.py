@@ -107,7 +107,6 @@ def user_login():
         refresh_token = utils.create_token(request.json['username'], 
                                                    key, refresh_token_time)
         
-        
         user_doc_ref = db.collection(u'users').document(request.json['username'])
         
         # add refresh token to the user document
