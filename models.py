@@ -1,5 +1,7 @@
+import datetime
 import json
-
+from abc import ABC, abstractmethod
+import time
 
 class User(object):
     def __init__(self, username, password, email,
@@ -58,4 +60,56 @@ class Sleep(object):
         return self.__dict__
 
 
+# class BaseToken(ABC):
+    
+#     @abstractmethod
+#     def create_token():
+#         pass
+    
+#     @abstractmethod
+#     @staticmethod
+#     def validate_token(token):
+#         pass
+    
+#     @abstractmethod
+#     def get_access_token():
+#         pass
+        
+# class JWTToken(BaseToken):
+    
+#     def __init__(self, username -> str, password -> str, access_token_exp -> int, refresh_token_exp -> int ,  role=[]) -> None:
+#         super().__init__()
+#         self.username = username
+#         self.password = password
+#         self.access_token_exp = access_token_exp
+#         self.refresh_token_exp = refresh_token_exp
+#         self.access_token = None
+#         self.refresh_token = None
+        
+        
+#     def create_token(self):
+    
+#         def is_empty(list):
+#             return not list
+    
+#         current_date = datetime.now()
+#         future_date = current_date +  datetime.timedelta(minutes=time)
+#         user_role = 'USER'
+        
+#         #check if the user has a role in the
+#         if not is_empty(self.role):
+#             user_role = self.role[0]
+    
+#         header =  {'alg': 'RS256'}
+#         payload = {'userid': self.username, 
+#                 'iat': str(datetime.now()),
+#                 'exp': str(future_date),
+#                 'role': user_role}
+    
+#         token  = jwt.encode(header, payload, key).decode('utf8')
+  
+#         return token
+    
+        
+    
 

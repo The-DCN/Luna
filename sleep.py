@@ -4,7 +4,6 @@ from google.cloud import firestore
 # Firestore object
 sleep_record_ref = db.collection(u'sleep')
 
-
 def createSleepRecord(userid, start_time=None, end_time=None, sleep_rating=None, last_modified=None):
     sleep_dict = dict()
     sleep_dict['userid'] = userid

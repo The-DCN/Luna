@@ -51,7 +51,6 @@ def create_user(first_name,last_name, username, email, password):
         # creating document 
         user_ref.set(user_data)
         
-        
     
 def validate_user_credentials(username, password):
     
@@ -61,8 +60,9 @@ def validate_user_credentials(username, password):
         if user_doc.exists:
             
             user = user_doc.to_dict()
+            
             #convert password to byte array before checking the credentials
-            unicode_password = bytes(password, "utf8") 
+            unicode_password = bytes(password, "utf-8") 
             return bcrypt.checkpw(unicode_password, user['password'])
 
         return False 
@@ -106,21 +106,12 @@ def check_refresh_token(token):
 '''
 this method will add an invalid token into the collection of
 banned jwt
-
 uses a utf-8 string of the jwt-token as a document id
 expired jwt documents contain:
 
 byte array token
 date that
 '''
-def deactivate_token(token):
-    try:
-        token_data = {
-            'token': bytes(token, 'utf-8'),
-            'date_added': firestore.SERVER_TIMESTAMP
-        }
-        db.collection(u'expired_tokens').document(token).set(token_data)  
-    
-    except:
-        print('something went wrong while trying to add the jwt to the expired tokens')
+
+
 

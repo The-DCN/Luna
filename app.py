@@ -1,4 +1,5 @@
 import os
+from basetoken import BaseToken
 from flask import Flask, jsonify, request, escape
 from flask_cors import CORS
 import werkzeug.exceptions as ex
@@ -12,6 +13,7 @@ import datetime
 import config
 import sleep
 from models import User
+from jwttoken import JWTToken
 
 app = Flask(__name__)
 CORS(app)
@@ -44,14 +46,11 @@ def login_required(method):
                 
                 #decode the token 
                 encoded_token = bytes(token, 'utf-8')
-                decoded = jwt.decode(encoded_token, app.config['KEY'])
+                key = open("rsa_public.pem", 'r').read()
+                decoded = jwt.decode(encoded_token, key)
                 user = decoded['userid']
                 user_doc = db.collection(u'users').document(user).get()
             
-                if not user_doc.exists:
-                    return utils.deactivate_token()
-            
-            return method(user_doc.to_dict())
         
         except Exception as e:
             print('used expired token')
@@ -76,50 +75,45 @@ def login_required(method):
             return jsonify({'message': 'You are required to be logged in to make this request'})
   
     return wrapper
-
-    
-
-@app.route("/api", methods=["GET"])
-@login_required
-def hello_world(user):
-    return jsonify({"greeting": "hello world"})
  
                 
 @app.route("/api/login", methods=["POST"])
 def user_login():    
     
     try:
-        valid_credentials = utils.validate_user_credentials(request.json['username'], 
-                                                            request.json['password'])
+        
+        username=request.json['username']
+        password = request.json['password']
+        access_token_exp=app.config['ACCESS_TOKEN_EXPIRE_TIME']
+        refresh_token_exp = app.config['REFRESH_TOKEN_EXPIRE_TIME']
+        
+        valid_credentials = utils.validate_user_credentials(username, password)
                 
         if not valid_credentials:
             return jsonify({'message': 'your credentials were invalid'}), 400
         
-        f = open('rsa_private.pem', 'r')
-        key = f.read()
+
+        key = open('rsa_private.pem', 'r').read()
+        jwt_token = JWTToken(username=username, 
+                             access_token_exp=access_token_exp, 
+                             refresh_token_exp=refresh_token_exp,
+                             key=key)
         
-        access_token_time = app.config['ACCESS_TOKEN_EXPIRE_TIME']
-        refresh_token_time = app.config['REFRESH_TOKEN_EXPIRE_TIME']
-        
-        access_token = utils.create_token(request.json['username'], 
-                                          key, access_token_time,)
-        
-        refresh_token = utils.create_token(request.json['username'], 
-                                                   key, refresh_token_time)
-        
+        #create access and refresh tokens for user
+        jwt_token.create()
         user_doc_ref = db.collection(u'users').document(request.json['username'])
-        
+
         # add refresh token to the user document
         user_doc_ref.set({
-            'refresh_token': refresh_token
+            'refresh_token': jwt_token.get_refresh_token()
          }, merge=True) 
-
         
-        return jsonify({'access_token': access_token, 'refresh_token': refresh_token})
+        return jsonify({'access_token': jwt_token.get_access_token(), 
+                        'refresh_token':jwt_token.get_refresh_token()})
     
-    except Exception as e:
-       return jsonify({'message': 'something went wrong' +
-                        'while processing your request'}), 400   
+    except Exception as err:
+       print(err) 
+       return jsonify({'message': "Something went wrong"}), 400   
     
 
 
@@ -149,10 +143,8 @@ def user_logout():
     except:
         return jsonify({'message': 'error occured'})
 
-@app.route("/test", methods=["GET"])
-def test_request():
-    print(request.json['username'])
-    return "Hello, world!"
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
+
+
