@@ -9,4 +9,4 @@ API for dreamnotes journals and sleep entries
 - Create cloud run instance
 - Implement Authentication MVPs
 - Implement sleep analytics MVPs
-- 
+- The next steps following the completion of these API
